@@ -1,6 +1,6 @@
 ![Ironhack logo](https://i.imgur.com/1QgrNNw.png)
 
-# Lab | Resolving Git Conflicts
+# Lab | Resolving Git Conflicts <<Changing code Malva 09.11.2021>>
 
 ## Introduction
 
