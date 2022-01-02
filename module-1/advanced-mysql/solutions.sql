@@ -46,7 +46,7 @@ inner join titleauthor as tiau on ti.title_id=tiau.title_id
 --Step 3: Calculate the total profits of each author
 select TOP 3
 royalties_advance_by_autor_title.au_id,
-sum(royalties_advance_by_autor_title.advance) + sum(royalties_advance_by_autor_title.sales_royalty) as profiles
+sum(royalties_advance_by_autor_title.advance) + sum(royalties_advance_by_autor_title.sales_royalty) as profits
 from
 (select 
 royalties_by_autor_title.title_id,
@@ -71,9 +71,58 @@ group by royalties_by_sale_autor_title.title_id,royalties_by_sale_autor_title.au
 inner join titles as ti on royalties_by_autor_title.title_id=ti.title_id
 inner join titleauthor as tiau on ti.title_id=tiau.title_id) as royalties_advance_by_autor_title
 group by royalties_advance_by_autor_title.au_id
-order by profiles desc 
+order by profits desc 
 
 
 --Challenge 2 - Alternative Solution
+
+--Advance of each title and author
+SELECT * 
+INTO #advance_title_author
+FROM 
+(select 
+ti.title_id as title_id,
+tiau.au_id as au_id,
+ti.advance * tiau.royaltyper / 100 as advance
+from titles as ti 
+inner join titleauthor as tiau on ti.title_id=tiau.title_id
+) as advance_title_author
+
+--Royalty of each sale
+SELECT * 
+INTO #royalty_sale
+FROM 
+(select 
+sa.title_id as title_id,
+tiau.au_id as au_id,
+ti.price * sa.qty * ti.royalty / 100 * tiau.royaltyper / 100 as sales_royalty
+from sales as sa 
+inner join titles as ti on sa.title_id=ti.title_id
+inner join titleauthor as tiau on ti.title_id=tiau.title_id
+) as royalty_sale
+
+--Calculate the total profits of each author
+select TOP 3
+profit_author.au_id,
+sum(profit_author.advance) + sum(profit_author.royalty) as profits
+from(
+select 
+royalty_title.title_id,
+royalty_title.au_id,
+royalty_title.royalty,
+advance_title_author.advance
+from
+(select 
+title_id,
+au_id, 
+sum(sales_royalty) as royalty
+from #royalty_sale
+group by title_id,au_id) as royalty_title
+inner join #advance_title_author as advance_title_author
+on advance_title_author.title_id=royalty_title.title_id
+and advance_title_author.au_id=royalty_title.au_id) as profit_author
+group by profit_author.au_id
+order by profits desc 
+
 
 --Challenge 3
