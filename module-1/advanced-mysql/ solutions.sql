@@ -1,5 +1,4 @@
 --Challenge 1 - Most Profiting Authors - top 3 most profiting authors 
-
 --Step 1: Calculate the royalty of each sale for each author and the advance for each author and publication
 --Advance of each title and author
 select 
@@ -16,7 +15,6 @@ ti.price * sa.qty * ti.royalty / 100 * tiau.royaltyper / 100 as sales_royalty
 from sales as sa 
 inner join titles as ti on sa.title_id=ti.title_id
 inner join titleauthor as tiau on ti.title_id=tiau.title_id
-
 
 --Step 2: Aggregate the total royalties for each title and author
 select 
@@ -37,11 +35,10 @@ tiau.au_id as au_id,
 ti.price * sa.qty * ti.royalty / 100 * tiau.royaltyper / 100 as sales_royalty
 from sales as sa 
 inner join titles as ti on sa.title_id=ti.title_id
-inner join titleauthor as tiau on ti.title_id=tiau.title_id ) as royalties_by_sale_autor_title
+inner join titleauthor as tiau on ti.title_id=tiau.title_id) as royalties_by_sale_autor_title
 group by royalties_by_sale_autor_title.title_id,royalties_by_sale_autor_title.au_id) as royalties_by_autor_title
 inner join titles as ti on royalties_by_autor_title.title_id=ti.title_id
-inner join titleauthor as tiau on ti.title_id=tiau.title_id
-
+inner join titleauthor as tiau on ti.title_id=tiau.title_id and royalties_by_autor_title.au_id=tiau.au_id
 
 --Step 3: Calculate the total profits of each author
 select TOP 3
@@ -69,9 +66,11 @@ inner join titles as ti on sa.title_id=ti.title_id
 inner join titleauthor as tiau on ti.title_id=tiau.title_id ) as royalties_by_sale_autor_title
 group by royalties_by_sale_autor_title.title_id,royalties_by_sale_autor_title.au_id) as royalties_by_autor_title
 inner join titles as ti on royalties_by_autor_title.title_id=ti.title_id
-inner join titleauthor as tiau on ti.title_id=tiau.title_id) as royalties_advance_by_autor_title
+inner join titleauthor as tiau on ti.title_id=tiau.title_id and royalties_by_autor_title.au_id=tiau.au_id
+) as royalties_advance_by_autor_title
 group by royalties_advance_by_autor_title.au_id
 order by profits desc 
+
 
 
 --Challenge 2 - Alternative Solution
@@ -124,5 +123,29 @@ and advance_title_author.au_id=royalty_title.au_id) as profit_author
 group by profit_author.au_id
 order by profits desc 
 
-
 --Challenge 3
+SELECT * 
+INTO most_profiting_authors
+FROM 
+(select TOP 3
+profit_author.au_id,
+sum(profit_author.advance) + sum(profit_author.royalty) as profits
+from(
+select 
+royalty_title.title_id,
+royalty_title.au_id,
+royalty_title.royalty,
+advance_title_author.advance
+from
+(select 
+title_id,
+au_id, 
+sum(sales_royalty) as royalty
+from #royalty_sale
+group by title_id,au_id) as royalty_title
+inner join #advance_title_author as advance_title_author
+on advance_title_author.title_id=royalty_title.title_id
+and advance_title_author.au_id=royalty_title.au_id) as profit_author
+group by profit_author.au_id
+order by profits desc 
+) as most_profiting_authors
