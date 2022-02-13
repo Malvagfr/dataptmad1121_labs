@@ -1,0 +1,4 @@
+#lab
+https://public.tableau.com/app/profile/malva6700/viz/tableau-data-viz_16447733774330/NFLTeamPerformanceDashboard?publish=yes
+#bonus
+https://public.tableau.com/app/profile/malva6700/viz/LabDataVisualizationwithTableau-bonus/GDPanddensitybycountry?publish=yes
